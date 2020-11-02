@@ -1,4 +1,5 @@
-import inspect
+## Builtin Modules
+import functools, inspect
 
 def signature_decorator_factory(*callbacks, apply_defaults = False):
     """ Creates a decorator which calls the given functions before applying the decorated function.
@@ -189,47 +190,6 @@ class SignatureDecorator():
                 ondecoration(inst)
             return deco
         return inner
-
-def unitconversion_decorator_factory(conversion_function):
-    """ This is an extension of signature_decorator_factory made to
-        generate math.trig.as_degrees and as_radians, but could be
-        used for other unit conversions.
-
-        conversion_function is a callback that will be used to convert
-        the arg value of the decorated function.
-
-        A general docstring for the generated decorator is provided with it.
-    """
-    def converter(arg = None, callback = None):
-        f"""If provided, arg is the decorated function's argument index, name,
-        or a list of such to convert If omitted, arg will be 0 (the first argument).
-        
-        If callback is provided, it will be checked for a Truthy value before
-        the conversion is made; if it evaluates Falsey, the conversion will not
-        be made. callback can be a callable or a persistent value (a Falsey value
-        for callable means that a conversion will never take place).
-
-        This function uses {conversion_function} and does not inspect that the argument(s)
-        value is valid."""
-        if arg and not isinstance(arg,(int,str, list, tuple)):
-            raise TypeError("Invalid arg type: should be an Integer or String if provided")
-        ### Uniform arg
-        if arg is None: arg = 0
-        if isinstance(arg,(list,tuple)): arg = list(arg)
-        else: arg  = [arg,]
-        ## uniform callback
-        if callback:
-            if not callable(callback): callback = lambda: callback
-        def checkupdate(bargs):
-            ## If no callback or callback returns Falsey: do nothing
-            if not callback and callback is not None: return
-            if callback and not callback(): return
-            ## Otherwise, change args
-            for a in arg:
-                if isinstance(a,int): a = list(bargs.arguments)[a]
-                bargs.arguments[a] = conversion_function(bargs.arguments[a])
-        return signature_decorator_factory(checkupdate)
-    return converter
 
 def dynamic_defaults(**kw):
     """ A factory to help implement the most common usage of signature_decorator_factory:
